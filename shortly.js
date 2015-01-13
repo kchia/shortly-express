@@ -2,6 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -40,19 +41,11 @@ function(req, res) {
 app.get('/login',
 function(req, res) {
   res.render('login');
-  // If username doesn't exist, prompt 'no user by that name'
-  // else, hash password input then compare to database
-  //    if hashed password from user matches hashed password in database, route to main page
-  //
-  // If User clicks create an account, route to signup page
 });
 
 app.get('/signup',
 function(req, res) {
   res.render('signup');
-  // If username exists, return prompt 'username exists', then route to login
-  // else send username and password to server to hash password. Afterwords, store both
-  // username and hashed password to database
 });
 
 app.get('/links',
@@ -73,6 +66,7 @@ function(req, res) {
 
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
+      console.log(found);
       res.send(200, found.attributes);
     } else {
       util.getUrlTitle(uri, function(err, title) {
@@ -94,6 +88,62 @@ function(req, res) {
       });
     }
   });
+});
+
+app.post('/login',function(req,res){
+  // If username doesn't exist, prompt 'no user by that name'
+  var username = req.body.username;
+  var password = req.body.password;
+  // bcrypt our password
+  var hashed;
+  if(username !== new User({ username: username}).fetch()){
+
+
+
+  }
+
+  bcrypt.hash(password, null, null, function(err, hash){
+    hashed = hash;
+  });
+
+
+
+
+  new User({ username: username, hash: hashed }).fetch().then(function(results) {
+    if (results) {
+      // console.log(results.attributes);
+      res.send(200, results.attributes);
+    } else {
+      util.getUrlTitle(uri, function(err, title) {
+        if (err) {
+          console.log('Error reading URL heading: ', err);
+          return res.send(404);
+        }
+
+        var link = new Link({
+          url: uri,
+          title: title,
+          base_url: req.headers.origin
+        });
+
+        link.save().then(function(newLink) {
+          Links.add(newLink);
+          res.send(200, newLink);
+        });
+      });
+    }
+  });
+});
+  // else, hash password input then compare to database
+  //    if hashed password from user matches hashed password in database, route to main page
+  //
+  // If User clicks create an account, route to signup page
+//
+
+app.post('/signup',function(req,res){
+  // If username exists, return prompt 'username exists', then route to login
+  // else send username and password to server to hash password. Afterwords, store both
+  // username and hashed password to database
 });
 
 /************************************************************/
