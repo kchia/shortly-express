@@ -23,24 +23,46 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/', 
+app.get('/',
+function(req, res) {
+  //Check if session is active.
+  //  if session is active, stay at current page
+  //  if not, redirect to login page
+
+  res.render('index');
+});
+
+app.get('/create',
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
+app.get('/login',
 function(req, res) {
-  res.render('index');
+  res.render('login');
+  // If username doesn't exist, prompt 'no user by that name'
+  // else, hash password input then compare to database
+  //    if hashed password from user matches hashed password in database, route to main page
+  //
+  // If User clicks create an account, route to signup page
 });
 
-app.get('/links', 
+app.get('/signup',
+function(req, res) {
+  res.render('signup');
+  // If username exists, return prompt 'username exists', then route to login
+  // else send username and password to server to hash password. Afterwords, store both
+  // username and hashed password to database
+});
+
+app.get('/links',
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
 
-app.post('/links', 
+app.post('/links',
 function(req, res) {
   var uri = req.body.url;
 
