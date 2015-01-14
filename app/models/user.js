@@ -7,7 +7,7 @@ var User = db.Model.extend({
   hasTimestamps: true,
   defaults: {
     username: '',
-    password: ''
+    hash: ''
   }
 });
 
