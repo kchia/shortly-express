@@ -36,6 +36,16 @@ app.get('/',
 
 });
 
+app.get('/logout', function(req,res){
+  req.session.destroy(function(err){
+    if(err){
+      console.log(err);
+    } else {
+      res.redirect('/');
+    }
+  });
+});
+
 app.get('/create',
   function(req, res) {
     res.redirect('/');
@@ -64,7 +74,6 @@ app.get('/links',
 
 app.post('/links',
   function(req, res) {
-    console.log(sess.username);
     if (!sess.username){
       res.redirect('/');
     }
@@ -115,7 +124,7 @@ app.post('/login',function(req,res){
     bcrypt.compare(password, user.get('hash'), function(err, match){
       if(match){
         sess.username = username;
-        sess.cookie.originalMaxAge = 5000;
+        sess.cookie.originalMaxAge = 300000;
         // If username & password correct 'route to all links'
         res.render('index');
         // If wrong password 'Password incorrect'
@@ -131,21 +140,20 @@ app.post('/login',function(req,res){
 app.post('/signup',function(req,res){
   var username = req.body.username;
   var password = req.body.password;
-  var hashed;
 
   // If username exists, return prompt 'username exists', then route to login
   new User({ username: username }).fetch().then(function(user){
-    if (user.attributes.username){
+    if (user){
       res.redirect('login');
   // if username does not exist, store the username and password into the database
-    } else {
+    } else if(!user){
       bcrypt.hash(password, null, null, function(err, hash){
         Users.create({
           username: username,
           hash: hash
         }).then(function(newUser){
           Users.add(newUser);
-          res.send(200, newUser);
+          res.redirect('/login');
         });
       });
     }
